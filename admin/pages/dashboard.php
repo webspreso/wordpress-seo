@@ -3,6 +3,11 @@
  * @package Admin
  */
 
+// if ( ! class_exists( 'Yoast_OAuthConsumer' ) )
+	// require_once plugin_dir_path( __FILE__ ) . '../wp-gdata/wp-gdata.php';
+ 
+include_once plugin_dir_path( __FILE__ ) . '../class-gwt.php';
+ 
 if ( !defined('WPSEO_VERSION') ) {
 	header('HTTP/1.0 403 Forbidden');
 	die;
@@ -34,6 +39,8 @@ robots_meta_handler();
 
 // detect and handle aioseo here
 aioseo_handler();
+
+gwt_handler();
 
 do_action( 'all_admin_notices' );
 
@@ -280,4 +287,53 @@ function replace_meta( $old_metakey, $new_metakey, $replace = false ) {
 		if ( $replace )
 			delete_post_meta( $old->post_id, $old_metakey );
 	}
+}
+
+
+
+
+function gwt_handler() {
+
+	if ( isset( $_REQUEST['add'] ) ) {
+		$wpseo_gwt = new WPSEO_Gwt();
+	
+		$response = $wpseo_gwt->add_site();
+		
+		// TODO: handle the response / report errors to the user
+		var_dump($response);
+		
+		// site created
+		if ($response['response']['code'] == 201) {
+			$str = 'new site created need to verify site';
+		} else if ($response['response']['code'] == 403) {
+			$str = $response['response']['message'] .': '. $response['body'];
+			var_dump($str);
+		}
+	}
+	
+	
+	if ( isset( $_REQUEST['verify'] ) ) {
+		$wpseo_gwt = new WPSEO_Gwt();
+	
+		$response = $wpseo_gwt->verify_site();
+	}
+	
+	
+
+	if ( isset( $_REQUEST['sitemap'] ) ) {
+		$wpseo_gwt = new WPSEO_Gwt();
+	
+		$response = $wpseo_gwt->submit_sitemap();	
+	}
+	
+	
+	if ( isset( $_REQUEST['issue'] ) ) {
+		$wpseo_gwt = new WPSEO_Gwt();
+	
+		$response = $wpseo_gwt->get_crawl_issues();
+	}
+	
+	
+	
+	
 }
