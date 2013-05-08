@@ -6,7 +6,7 @@
 // if ( ! class_exists( 'Yoast_OAuthConsumer' ) )
 	// require_once plugin_dir_path( __FILE__ ) . '../wp-gdata/wp-gdata.php';
  
-include_once plugin_dir_path( __FILE__ ) . '../class-gwt.php';
+include_once plugin_dir_path( __FILE__ ) . '/../class-gwt.php';
  
 if ( !defined('WPSEO_VERSION') ) {
 	header('HTTP/1.0 403 Forbidden');
@@ -16,6 +16,7 @@ if ( !defined('WPSEO_VERSION') ) {
 global $wpseo_admin_pages;
 
 $options = get_option( 'wpseo' );
+$gwt_options = get_option( 'Yoast_Google_Webmaster_Tools' );
 
 if ( isset( $_GET['allow_tracking'] ) && check_admin_referer( 'wpseo_activate_tracking', 'nonce' ) ) {
 	$options['tracking_popup'] = 'done';
@@ -148,7 +149,15 @@ echo '<p class="desc">' . __( 'Unchecking this box allows authors and editors to
 
 echo '<h2>' . __( 'Webmaster Tools', 'wordpress-seo' ) . '</h2>';
 echo '<p>' . __( 'You can use the boxes below to verify with the different Webmaster Tools, if your site is already verified, you can just forget about these. Enter the verify meta values for:', 'wordpress-seo' ) . '</p>';
+
+
+echo gwt_button();
+
+
 echo $wpseo_admin_pages->textinput( 'googleverify', '<a target="_blank" href="https://www.google.com/webmasters/tools/dashboard?hl=en&amp;siteUrl=' . urlencode( get_bloginfo( 'url' ) ) . '%2F">' . __( 'Google Webmaster Tools', 'wordpress-seo' ) . '</a>' );
+
+
+
 echo $wpseo_admin_pages->textinput( 'msverify', '<a target="_blank" href="http://www.bing.com/webmaster/?rfp=1#/Dashboard/?url=' . str_replace( 'http://', '', get_bloginfo( 'url' ) ) . '">' . __( 'Bing Webmaster Tools', 'wordpress-seo' ) . '</a>' );
 echo $wpseo_admin_pages->textinput( 'alexaverify', '<a target="_blank" href="http://www.alexa.com/pro/subscription">' . __( 'Alexa Verification ID', 'wordpress-seo' ) . '</a>' );
 
@@ -291,6 +300,42 @@ function replace_meta( $old_metakey, $new_metakey, $replace = false ) {
 
 
 
+function gwt_button() {
+	
+	$options = get_option( 'wpseo' );
+	$gwt_options = get_option( 'Yoast_Google_Webmaster_Tools' );
+	
+	// auth token
+	$str = '';
+	if ( !$gwt_options['gwtwp_oauth']['access_token']['oauth_token'] 
+		|| !$gwt_options['gwtwp_oauth']['access_token']['oauth_token_secret'] ) {
+		$str = '<a class="button-secondary	" href="' . admin_url( 'admin.php?page=wpseo_dashboard&gwt_connect' ) . '">' . __( 'Connect to Google Webmaster Tools', 'wordpress-seo' ) . '</a>';
+	}
+
+	
+	// no metatag code so offer to add this site and get metatag
+	if ( !$options['googleverify'] ) {
+		$str = '<a class="button-secondary	" href="' . admin_url( 'admin.php?page=wpseo_dashboard&add' ) . '">' . __( 'Add this site', 'wordpress-seo' ) . '</a>';
+	}
+
+
+	// metatag available, send a verify request
+	if ( $gwt_options['verified'] === 'false' ) {
+		$str = '<a class="button-secondary	" href="' . admin_url( 'admin.php?page=wpseo_dashboard&verify' ) . '">' . __( 'Verify this site', 'wordpress-seo' ) . '</a>';	
+	}
+
+	// TODO: test this
+	// site verified offer to submit sitemap
+	if ( $gwt_options['verified'] === 'true' ) {
+		$str = '<a class="button-secondary	" href="' . admin_url( 'admin.php?page=wpseo_dashboard&sitemap' ) . '">' . __( 'Submit sitemap', 'wordpress-seo' ) . '</a>';		
+	}
+
+	// TODO: sitemap submitted so return nothing;
+	return $str;
+}
+
+
+
 
 function gwt_handler() {
 
@@ -298,17 +343,6 @@ function gwt_handler() {
 		$wpseo_gwt = new WPSEO_Gwt();
 	
 		$response = $wpseo_gwt->add_site();
-		
-		// TODO: handle the response / report errors to the user
-		var_dump($response);
-		
-		// site created
-		if ($response['response']['code'] == 201) {
-			$str = 'new site created need to verify site';
-		} else if ($response['response']['code'] == 403) {
-			$str = $response['response']['message'] .': '. $response['body'];
-			var_dump($str);
-		}
 	}
 	
 	
@@ -317,7 +351,6 @@ function gwt_handler() {
 	
 		$response = $wpseo_gwt->verify_site();
 	}
-	
 	
 
 	if ( isset( $_REQUEST['sitemap'] ) ) {
@@ -332,8 +365,5 @@ function gwt_handler() {
 	
 		$response = $wpseo_gwt->get_crawl_issues();
 	}
-	
-	
-	
 	
 }

@@ -367,33 +367,41 @@ function wpseo_store_tracking_response() {
 add_action('wp_ajax_wpseo_allow_tracking', 'wpseo_store_tracking_response');
 
 
-function xml2array($xml) {
-	function normalize_xml2array($obj, &$result) {
-		$data = $obj;
-		if (is_object($data)) {
-			$data = get_object_vars($data);
- 
-			foreach($obj->getDocNamespaces() as $ns_name => $ns_uri) {
-				if ($ns_name === '') continue;
-				$ns_obj = $obj->children($ns_uri);
-				foreach(get_object_vars($ns_obj) as $k => $v) {
-					$data[ $ns_name .':' . $k] = $v;
+
+
+// https://gist.github.com/Seebz/4249817
+function yoast_xml2array_alt($xml) {	
+	
+	// added !function_exists() to prevent redeclared function error
+	if (!function_exists('normalize_xml2array')) {
+		function normalize_xml2array($obj, &$result) {
+			$data = $obj;
+			if (is_object($data)) {
+				$data = get_object_vars($data);
+	 
+				foreach($obj->getDocNamespaces() as $ns_name => $ns_uri) {
+					if ($ns_name === '') continue;
+					$ns_obj = $obj->children($ns_uri);
+					foreach(get_object_vars($ns_obj) as $k => $v) {
+						$data[ $ns_name .':' . $k] = $v;
+					}
 				}
 			}
-		}
- 
-		if (is_array($data)) {
-			foreach ($data as $key => $value) {
-				$res = null;
-				call_user_func_array(__FUNCTION__, array($value, &$res));
-				$result[$key] = $res;
+	 
+			if (is_array($data)) {
+				foreach ($data as $key => $value) {
+					$res = null;
+					call_user_func_array(__FUNCTION__, array($value, &$res));
+					$result[$key] = $res;
+				}
+			} else {
+				$result = $data;
 			}
-		} else {
-			$result = $data;
-		}
+		}		
 	}
- 
-	normalize_xml2array(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA), $result);
+	
+	// suppress warnings here so a malform xml will return false 
+	normalize_xml2array(@simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA), $result);
 	$json = json_encode($result);
 	return json_decode($json, true);
 }

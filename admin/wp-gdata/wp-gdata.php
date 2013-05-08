@@ -9,7 +9,7 @@
 if ( ! class_exists( 'Yoast_OAuthConsumer' ) )
 	require( 'OAuth.php' );
 
-class WP_GData {
+class WPSEO_GData {
 	/* Contains the last HTTP status code returned. */
 	public $http_code;
 
@@ -47,17 +47,13 @@ class WP_GData {
 		$request->sign_request( $this->signature_method, $this->consumer, $this->token );
 
 		
-		// var_dump($request->to_postdata()); exit();
-		
-		// return wp_remote_post( $request->to_url(), $request->to_postdata() );
-		
 		if ( 'GET' == $method )
 			return wp_remote_get( $request->to_url() );
 		else if ( 'POST' == $method )
 			return wp_remote_post( $request->to_url(), $parameters );
 		else
 			return wp_remote_request( $request->to_url(), $parameters );
-	  }
+	}
 
 	function get_authorize_url( $token ) {
 		if ( is_array( $token ) )

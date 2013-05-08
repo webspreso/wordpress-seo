@@ -3,9 +3,10 @@
  * @package Admin
  */
 
-if ( ! class_exists( 'Yoast_OAuthConsumer' ) )
-	require_once plugin_dir_path( __FILE__ ) . '/wp-gdata/wp-gdata.php';
- 
+if ( ! class_exists( 'WPSEO_GData' ) ) {
+	require_once plugin_dir_path( __FILE__ ) . 'wp-gdata/wp-gdata.php';
+} 
+
 if ( !defined( 'WPSEO_VERSION' ) ) {
 	header( 'HTTP/1.0 403 Forbidden' );
 	die;
@@ -86,7 +87,7 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 			$sitename = $this->sitename;
 		}
 		
-		$gdata = new WP_GData(
+		$gdata = new WPSEO_GData(
 			array(
 				// 'scope'              => 'https://www.google.com/webmasters/tools/feeds/',
 				// 'xoauth_displayname' => 'Google WEBMASTER for WordPress by Yoast'
@@ -110,13 +111,27 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 		
 		$response = $gdata->post('https://www.google.com/webmasters/tools/feeds/sites/', $parameters );
 		
+		if (WP_DEBUG)
+			echo("<pre>".htmlspecialchars( wp_remote_retrieve_body($response) )."</pre>");
+		
 		
 		// site added so save the metatag code
 		if ($response['response']['code'] == 201) {
-			$gwt_site_info = xml2array(wp_remote_retrieve_body( $response ));
+			$gwt_site_info = yoast_xml2array_alt(wp_remote_retrieve_body( $response ));
 		
-			//$gwt_site_info = array ( 'id' => 'https://www.google.com/webmasters/tools/feeds/sites/http%3A%2F%2F54.241.25.88%2F', 'updated' => '2013-05-06T18:46:55.607Z', 'category' => array ( '@attributes' => array ( 'scheme' => 'http://schemas.google.com/g/2005#kind', 'term' => 'http://schemas.google.com/webmasters/tools/2007#site-info', ), ), 'title' => 'http://54.241.25.88/', 'content' => array ( '@attributes' => array ( 'src' => 'http://54.241.25.88/', ), ), 'link' => array ( 0 => array ( '@attributes' => array ( 'rel' => 'self', 'type' => 'application/atom+xml', 'href' => 'https://www.google.com/webmasters/tools/feeds/sites/http%3A%2F%2F54.241.25.88%2F', ), ), 1 => array ( '@attributes' => array ( 'rel' => 'edit', 'type' => 'application/atom+xml', 'href' => 'https://www.google.com/webmasters/tools/feeds/sites/http%3A%2F%2F54.241.25.88%2F', ), ), ), 'wt:verified' => 'false', 'wt:verification-method' => array ( 0 => '<meta name="google-site-verification" content="ic77CysOP08mrJ3FFYGwvwrvMI9NqQ8iLCmek8HcWdE" />', 1 => 'google01b451e3469640cf.html', ), 'gd:entryLink' => array ( 0 => NULL, 1 => NULL, ), );
+		// 403 code can mean a duplicate site, make a request to https://www.google.com/webmasters/tools/feeds/sites/SiteID/ 
+		// to get site info that should have the metatag code so we can process it
+		} else if ($response['response']['code'] == 403) {
+			$response = $gdata->get('https://www.google.com/webmasters/tools/feeds/sites/' . urlencode($this->sitename), $parameters );
+			
+			$gwt_site_info = yoast_xml2array_alt(wp_remote_retrieve_body( $response ));
+			
+			if (WP_DEBUG)
+				echo("<pre>".htmlspecialchars( wp_remote_retrieve_body($response) )."</pre>");
+		}
 		
+		// xml was parsed so save the options
+		if ($gwt_site_info) {
 			// save verify code and status
 			$o = get_option( $this->optionname );
 			$wpseo_options = get_option( 'wpseo' );
@@ -132,12 +147,6 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 			
 			update_option( $this->optionname, $o );
 			update_option( 'wpseo', $wpseo_options );
-		
-		} else {
-			// TODO: a 403 code means duplicate site, but the response does not provide the metatag code for verification,
-			// must makes a request to https://www.google.com/webmasters/tools/feeds/sites/SiteID/ to get site info that 
-			// should have the metatag code so we can process it
-		
 		}
 		
 		// send the verify request
@@ -149,7 +158,7 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 	public function verify_site() {
 		var_dump('in verify a site');
 		
-		$gdata = new WP_GData(
+		$gdata = new WPSEO_GData(
 			array(
 				// 'scope'              => 'https://www.google.com/analytics/feeds/',
 				// 'scope'              => 'https://www.google.com/webmasters/tools/feeds/',
@@ -179,7 +188,7 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 		if (WP_DEBUG)
 			echo("<pre>".htmlspecialchars( wp_remote_retrieve_body($response) )."</pre>");
 		
-		$gwt_site_info = xml2array(wp_remote_retrieve_body( $response ));
+		$gwt_site_info = yoast_xml2array_alt(wp_remote_retrieve_body( $response ));
 		
 		// save verify status
 		$o = get_option( $this->optionname );
@@ -199,7 +208,7 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 		
 		$sitemap_url = $this->sitename . 'sitemap_index.xml';
 		
-		$gdata = new WP_GData(
+		$gdata = new WPSEO_GData(
 			array(),
 			$this->oauth_token,
 			$this->oauth_token_secret
@@ -226,7 +235,7 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 	
 	// TODO: process this and display it as a table
 	public function get_crawl_issues() {
-		$gdata = new WP_GData(
+		$gdata = new WPSEO_GData(
 			array(
 				// 'scope'              => 'https://www.google.com/analytics/feeds/',
 				// 'scope'              => 'https://www.google.com/webmasters/tools/feeds/',
@@ -240,20 +249,20 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 		
 		echo("<pre>".htmlspecialchars( wp_remote_retrieve_body($response) )."</pre>");
 		
-		$issue = xml2array(wp_remote_retrieve_body( $response ));
+		$issue = yoast_xml2array_alt(wp_remote_retrieve_body( $response ));
 		var_dump($issue);
 	}
 	
 	
 
 	function authenticate() {
-		if ( isset( $_GET['gwt'] )) {
+		if ( isset( $_GET['gwt_connect'] ) || isset( $_GET['gwt'] )) {
 			var_dump('in auth');
 			
-			$gdata = new WP_GData(
+			$gdata = new WPSEO_GData(
 				array(
 					'scope'              => 'https://www.google.com/webmasters/tools/feeds/',
-					'xoauth_displayname' => 'Google WEBMASTER for WordPress by Yoast',
+					'xoauth_displayname' => 'WordPress SEO by Yoast',
 				)
 			);
 			
@@ -278,10 +287,10 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 		
 			$o = get_option( $this->optionname );
 			if ( isset( $o['gwtwp_oauth']['oauth_token'] ) && $o['gwtwp_oauth']['oauth_token'] == $_REQUEST['oauth_token'] ) {
-				$gdata = new WP_GData(
+				$gdata = new WPSEO_GData(
 					array(
 						'scope'              => 'https://www.google.com/webmasters/tools/feeds/',
-						'xoauth_displayname' => 'Google WEBMASTER for WordPress by Yoast'
+						'xoauth_displayname' => 'WordPress SEO by Yoast'
 					),
 					$o['gwtwp_oauth']['oauth_token'],
 					$o['gwtwp_oauth']['oauth_token_secret']
