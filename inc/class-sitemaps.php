@@ -550,6 +550,7 @@ class WPSEO_Sitemaps {
 			$date = mysql2date( "Y-m-d\TH:i:s+00:00", $url['mod'] );
 		else
 			$date = date( 'c' );
+		$url['loc'] = htmlspecialchars( $url['loc'] );
 		$output = "\t<url>\n";
 		$output .= "\t\t<loc>" . $url['loc'] . "</loc>\n";
 		$output .= "\t\t<lastmod>" . $date . "</lastmod>\n";

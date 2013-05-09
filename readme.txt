@@ -105,6 +105,8 @@ You'll find the [FAQ on Yoast.com](http://yoast.com/wordpress/seo/faq/).
 
 = trunk =
 * Updated .pot file
+* Fixed sitemap "loc" element to have encoded entities.
+* Honor the language setting if other plugins set the language.
 
 = 1.4.7 =
 
