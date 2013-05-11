@@ -141,6 +141,8 @@ class WPSEO_Admin {
 		add_submenu_page( 'wpseo_dashboard', __( 'Internal Links', 'wordpress-seo' ), __( 'Internal Links', 'wordpress-seo' ), 'manage_options', 'wpseo_internal-links', array( $this, 'internallinks_page' ) );
 		add_submenu_page( 'wpseo_dashboard', __( 'RSS', 'wordpress-seo' ), __( 'RSS', 'wordpress-seo' ), 'manage_options', 'wpseo_rss', array( $this, 'rss_page' ) );
 		add_submenu_page( 'wpseo_dashboard', __( 'Import & Export', 'wordpress-seo' ), __( 'Import & Export', 'wordpress-seo' ), 'manage_options', 'wpseo_import', array( $this, 'import_page' ) );
+		
+		add_submenu_page( 'wpseo_dashboard', __( 'Crawl Issues', 'wordpress-seo' ), __( 'Crawl Issues', 'wordpress-seo' ), 'manage_options', 'wpseo_table', array( $this, 'crawl_issue_page' ) );
 
 		if ( !( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) && !( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) ) {
 			// Make sure on a multi site install only super admins can edit .htaccess and robots.txt
@@ -217,6 +219,16 @@ class WPSEO_Admin {
 			include( WPSEO_PATH . '/admin/pages/rss.php' );
 	}
 
+	
+	/**
+	 * Loads the form for the RSS page.
+	 */
+	function crawl_issue_page() {
+		if ( isset( $_GET['page'] ) && 'wpseo_table' == $_GET['page'] )
+			include( WPSEO_PATH . '/admin/pages/crawl-issue.php' );
+	}
+	
+	
 	/**
 	 * Loads the form for the XML Sitemaps page.
 	 */
