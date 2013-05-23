@@ -106,6 +106,17 @@ class WPSEO_Sitemaps {
 		if ( empty( $type ) )
 			return;
 
+		// TODO: may be move to sitemap.xml -> sitemap_index.html redirect code here
+		// $current_url  = is_ssl() ? 'https://' : 'http://';
+		// $current_url .= $_SERVER['HTTP_HOST'];
+		// $current_url .= $_SERVER['REQUEST_URI'];
+
+		// // must be 'sitemap.xml' and must be 404
+		// if ( home_url( '/sitemap.xml' ) == $current_url && $wp_query->is_404) {
+			// wp_redirect( home_url( '/sitemap_index.xml' ) );
+		// }
+			
+			
 		$this->build_sitemap( $type );
 		// 404 for invalid or emtpy sitemaps
 		if ( $this->bad_sitemap ) {

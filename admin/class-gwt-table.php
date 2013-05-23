@@ -8,41 +8,6 @@ if ( !defined( 'WPSEO_VERSION' ) ) {
 	die;
 }
 
-/*
-Plugin Name: Custom List Table Example
-Plugin URI: http://www.mattvanandel.com/
-Description: A highly documented plugin that demonstrates how to create custom List Tables using official WordPress APIs.
-Version: 1.1
-Author: Matt Van Andel
-Author URI: http://www.mattvanandel.com
-License: GPL2
-*/
-/*  Copyright 2011  Matthew Van Andel  (email : matt@mattvanandel.com)
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as
-    published by the Free Software Foundation.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
-
-
-/* == NOTICE ===================================================================
- * Please do not alter this file. Instead: make a copy of the entire plugin, 
- * rename it, and work inside the copy. If you modify this plugin directly and 
- * an update is released, your changes will be lost!
- * ========================================================================== */
-
-
-
 /*************************** LOAD THE BASE CLASS *******************************
  *******************************************************************************
  * The WP_List_Table class isn't automatically available to plugins, so we need
@@ -68,7 +33,7 @@ if(!class_exists('WP_List_Table')){
  * 
  * Our theme for this list table is going to be movies.
  */
-class Example_List_Table extends WP_List_Table {
+class WPSEO_Gwt_Table extends WP_List_Table {
     
     /** ************************************************************************
      * Normally we would be querying data from a database and manipulating that
@@ -163,14 +128,6 @@ class Example_List_Table extends WP_List_Table {
      **************************************************************************/
     function column_default($item, $column_name){
         switch($column_name){
-		
-		
-		
-            case 'rating':
-            case 'director':
-                return $item[$column_name];
-				
-			
 			case 'crawl_type':
 				return $item['crawl_type'];
 				
@@ -189,20 +146,6 @@ class Example_List_Table extends WP_List_Table {
         }
     }
     
-	// $record['id'] = $entry['id'];
-	// $record['updated'] = $entry['updated'];
-	// $record['title'] = $entry['title'];
-	
-	// $record['crawl_type'] = $entry['wt:crawl-type'];
-	// $record['issue_type'] = $entry['wt:issue-type'];
-	// $record['url'] = $entry['wt:url'];
-	
-	
-	// $record['date_detected'] = $entry['wt:date-detected'];
-	// $record['detail'] = $entry['wt:detail'];
-	// $record['linked_from'] = $entry['wt:linked-from'];
-	
-        
     /** ************************************************************************
      * Recommended. This is a custom column method and is responsible for what
      * is rendered in any column with a name/slug of 'title'. Every time the class
@@ -396,7 +339,7 @@ class Example_List_Table extends WP_List_Table {
      **************************************************************************/
     function get_bulk_actions() {
         $actions = array(
-            'delete'    => 'Delete'
+            // 'delete'    => 'Delete'
         );
         return $actions;
     }
@@ -510,14 +453,14 @@ class Example_List_Table extends WP_List_Table {
          * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          * ---------------------------------------------------------------------
          **********************************************************************/
-        
-                
+
         /**
          * REQUIRED for pagination. Let's figure out what page the user is currently 
          * looking at. We'll need this later, so you should always include it in 
          * your own package classes.
          */
-        $current_page = $this->get_pagenum();
+
+		 $current_page = $this->get_pagenum();
         
         /**
          * REQUIRED for pagination. Let's check how many items are in our data array. 

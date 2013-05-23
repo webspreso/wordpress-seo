@@ -24,9 +24,7 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 	// private $ozhicon = 'images/chart_curve.png';
 	public $optionname = 'Yoast_Google_Webmaster_Tools';
 	
-	// private $sitename = '';
-	// private $sitename = 'http://yoast.nl//';
-	// private $sitename = 'http://54.241.25.88/';
+	private $sitename = '';
 	
 	
 	/**
@@ -43,11 +41,8 @@ class WPSEO_Gwt extends WPSEO_Admin_Pages {
 		$this->oauth_token = $o['gwtwp_oauth']['access_token']['oauth_token'];
 		$this->oauth_token_secret = $o['gwtwp_oauth']['access_token']['oauth_token_secret'];
 
-		// TODO: ending slash is important, add logic to make there is ONE and only ONE ending slash
 		$this->sitename = trailingslashit( get_bloginfo('url') );
-		
-		// $this->sitename = trailingslashit( $this->sitename );
-		
+
 		// // Register the settings page
 		// add_action( 'admin_menu', array( &$this, 'register_settings_page' ) );
 
