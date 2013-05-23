@@ -251,7 +251,6 @@ function aioseo_handler() {
 			replace_meta( '_aioseop_keywords', '_yoast_wpseo_metakeywords', $replace );
 			replace_meta( '_aioseop_title', '_yoast_wpseo_title', $replace );
 			
-			
 			if ( isset( $_POST['wpseo']['importaioseoold'] ) ) {
 				replace_meta( 'description', '_yoast_wpseo_metadesc', $replace );
 				replace_meta( 'keywords', '_yoast_wpseo_metakeywords', $replace );

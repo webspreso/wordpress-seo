@@ -105,8 +105,15 @@ You'll find the [FAQ on Yoast.com](http://yoast.com/wordpress/seo/faq/).
 
 = trunk =
 * Updated .pot file
+* Updated ar, da_DK, el_GR, es_ES, fa_IR, id_ID, sv_SE & tr_TK
+* Added hr & sl_SI
 * Fixed sitemap "loc" element to have encoded entities.
 * Honor the language setting if other plugins set the language.
+* sitemap.xml will now redirect to sitemap_index.xml
+* Added filters 'wpseo_sitemap_exclude_post_type' and 'wpseo_sitemap_exclude_taxonomy'
+to allow themes/plugins to exclude entries in the XML sitemap
+* Many localization fixes
+* Added RTL support, some CSS fixes
 
 = 1.4.7 =
 
