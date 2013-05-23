@@ -23,7 +23,9 @@ class WPSEO_Admin_Pages {
 	/**
 	 * @var array $adminpages Array of admin pages that the plugin uses.
 	 */
-	var $adminpages = array( 'wpseo_dashboard', 'wpseo_rss', 'wpseo_files', 'wpseo_permalinks', 'wpseo_internal-links', 'wpseo_import', 'wpseo_titles', 'wpseo_xml', 'wpseo_social' );
+	var $adminpages = array( 'wpseo_dashboard', 'wpseo_rss', 'wpseo_files', 'wpseo_permalinks', 'wpseo_internal-links', 
+							 'wpseo_import', 'wpseo_titles', 'wpseo_xml', 'wpseo_social', 
+							 'wpseo_welcome_install', 'wpseo_welcome_update' );
 
 	/**
 	 * Class constructor, which basically only hooks the init function on the init hook

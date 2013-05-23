@@ -143,9 +143,10 @@ class WPSEO_Admin {
 		add_submenu_page( 'wpseo_dashboard', __( 'Permalinks', 'wordpress-seo' ), __( 'Permalinks', 'wordpress-seo' ), 'manage_options', 'wpseo_permalinks', array( $this, 'permalinks_page' ) );
 		add_submenu_page( 'wpseo_dashboard', __( 'Internal Links', 'wordpress-seo' ), __( 'Internal Links', 'wordpress-seo' ), 'manage_options', 'wpseo_internal-links', array( $this, 'internallinks_page' ) );
 		add_submenu_page( 'wpseo_dashboard', __( 'RSS', 'wordpress-seo' ), __( 'RSS', 'wordpress-seo' ), 'manage_options', 'wpseo_rss', array( $this, 'rss_page' ) );
-		add_submenu_page( 'wpseo_dashboard', __( 'Import & Export', 'wordpress-seo' ), __( 'Import & Export', 'wordpress-seo' ), 'manage_options', 'wpseo_import', array( $this, 'import_page' ) );
-		
-		add_submenu_page( 'wpseo_dashboard', __( 'Crawl Issues', 'wordpress-seo' ), __( 'Crawl Issues', 'wordpress-seo' ), 'manage_options', 'wpseo_table', array( $this, 'crawl_issue_page' ) );
+		add_submenu_page( 'wpseo_dashboard', __( 'Import & Export', 'wordpress-seo' ), __( 'Import & Export', 'wordpress-seo' ), 'manage_options', 'wpseo_import', array( $this, 'import_page' ) );		
+		add_submenu_page( 'wpseo_dashboard', __( 'Crawl Issues', 'wordpress-seo' ), __( 'Crawl Issues', 'wordpress-seo' ), 'manage_options', 'wpseo_table', array( $this, 'crawl_issue_page' ) );		
+		add_submenu_page( null, __( 'Welcome WP SEO', 'wordpress-seo' ), __( 'Welcome', 'wordpress-seo' ), 'manage_options', 'wpseo_welcome_install', array( $this, 'welcome_install_page' ) );
+		add_submenu_page( null, __( 'Welcome WP SEO', 'wordpress-seo' ), __( 'Welcome', 'wordpress-seo' ), 'manage_options', 'wpseo_welcome_update', array( $this, 'welcome_update_page' ) );
 
 		if ( !( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) && !( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) ) {
 			// Make sure on a multi site install only super admins can edit .htaccess and robots.txt
@@ -254,6 +255,22 @@ class WPSEO_Admin {
 	function social_page() {
 		if ( isset( $_GET['page'] ) && 'wpseo_social' == $_GET['page'] )
 			require( WPSEO_PATH . '/admin/pages/social.php' );
+	}
+
+	/**
+	 * Loads the Welcome Install page
+	 */
+	function welcome_install_page() {
+		if ( isset( $_GET['page'] ) && 'wpseo_welcome_install' == $_GET['page'] )
+			require( WPSEO_PATH . '/admin/pages/welcome-install.php' );
+	}
+	
+	/**
+	 * Loads the Welcome Update page
+	 */
+	function welcome_update_page() {
+		if ( isset( $_GET['page'] ) && 'wpseo_welcome_update' == $_GET['page'] )
+			require( WPSEO_PATH . '/admin/pages/welcome-update.php' );
 	}
 
 	/**
@@ -373,13 +390,26 @@ class WPSEO_Admin {
 		$options         = get_option( 'wpseo' );
 		$current_version = isset( $options['version'] ) ? $options['version'] : 0;
 
-		if ( version_compare( $current_version, WPSEO_VERSION, '==' ) )
+		$redirect_welcome_install = false;
+		// redirect to welcome page on if first_time option is set
+		if ( isset( $options['first_time'] ) && $options['first_time'] == true )  {
+			// unset( $options['first_time'] );
+			$options['first_time'] = false;
+			update_option( 'wpseo', $options );
+			$redirect_welcome_install = true;
+		}
+
+		if ( version_compare( $current_version, WPSEO_VERSION, '==' ) &&  $redirect_welcome_install == false )
 			return;
 
 		delete_option( 'rewrite_rules' );
 
 		// <= 0.3.5: flush rewrite rules for new XML sitemaps
+		// assume current version = 0 is a new install so redirect to welcome page
 		if ( $current_version == 0 ) {
+			$options['first_time'] = true;
+			update_option( 'wpseo', $options );
+			$redirect_welcome_install = true;
 			flush_rewrite_rules();
 		}
 
@@ -467,7 +497,7 @@ class WPSEO_Admin {
 
 			if ( is_array( $opt ) ) {
 				foreach ( $opt as $key => $val ) {
-					if ( !in_array( $key, array( 'ignore_blog_public_warning', 'ignore_tour', 'ignore_page_comments', 'ignore_permalink', 'ms_defaults_set', 'version', 'disableadvanced_meta', 'googleverify', 'msverify', 'alexaverify' ) ) ) {
+					if ( !in_array( $key, array( 'ignore_blog_public_warning', 'ignore_tour', 'ignore_page_comments', 'ignore_permalink', 'ms_defaults_set', 'version', 'disableadvanced_meta', 'googleverify', 'msverify', 'alexaverify', 'first_time' ) ) ) {
 						unset( $opt[$key] );
 					}
 				}
@@ -517,7 +547,21 @@ class WPSEO_Admin {
 
 		$options            = get_option( 'wpseo' );
 		$options['version'] = WPSEO_VERSION;
-		update_option( 'wpseo', $options );
+
+		update_option( 'wpseo', $options );		
+
+		// redirect to welcome install page
+		if ( $redirect_welcome_install == true ) {
+			wp_redirect( admin_url( 'admin.php?page=wpseo_welcome_install' ) );
+			exit;
+		}
+		
+		// redirect to welcome update page
+		if ( version_compare( $current_version, WPSEO_VERSION, '<' ) ) {
+			wp_redirect( admin_url( 'admin.php?page=wpseo_welcome_update' ) );
+			exit;
+		}
+		
 	}
 
 	/**
