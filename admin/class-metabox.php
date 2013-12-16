@@ -772,7 +772,10 @@ class WPSEO_Metabox {
 					continue;
 			}
 
-			wpseo_set_value( $meta_box['name'], sanitize_text_field( $data ), $post_id );
+			$notsaving = array('','0','none','-');
+			if (!in_array($data, $notsaving)) {
+				wpseo_set_value( $meta_box['name'], sanitize_text_field( $data ), $post_id );
+				}
 		}
 
 		$this->calculate_results( $post );
